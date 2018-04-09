@@ -52,11 +52,7 @@ public partial class TeamMemberPage : System.Web.UI.Page
             loadNewsFeed();
         }
         
-
-
-
-
-
+        
 
     }
 
@@ -84,6 +80,26 @@ public partial class TeamMemberPage : System.Web.UI.Page
 
         }
         con.Close();
+    }
+
+    protected void loadValueDropDown()
+    {
+        SqlConnection con = new SqlConnection();
+        con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
+        con.Open();
+
+        SqlCommand cmd = new SqlCommand("SELECT ValueName FROM CompanyValues", con);
+
+        SqlDataAdapter da = new SqlDataAdapter(cmd);
+        DataTable dt = new DataTable();
+
+        da.Fill(dt);
+
+        ddlCompanyValue.DataSource = dt;
+        ddlCompanyValue.DataTextField = "ValueName";
+        ddlCompanyValue.DataValueField = "ValueName";
+        ddlCompanyValue.DataBind();
+
     }
 
 
@@ -166,6 +182,7 @@ public partial class TeamMemberPage : System.Web.UI.Page
         Popup.Visible = true;
         Popup.Enabled = true;
         fillDropDown();
+        loadValueDropDown();
     }
     protected void fillDropDown()
     {

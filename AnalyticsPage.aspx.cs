@@ -42,6 +42,10 @@ public partial class AnalyticsPage : System.Web.UI.Page
 
         }
 
+        panel1.Visible = true;
+        panel2.Visible = false;
+        panel3.Visible = false;
+
 
     }
 
@@ -101,5 +105,29 @@ public partial class AnalyticsPage : System.Web.UI.Page
 
     }
 
-   
+
+
+
+
+    protected void tableauDropDown_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if(tableauDropDown.SelectedIndex == 0)
+        {
+            panel1.Visible = true;
+            panel2.Visible = false;
+            panel3.Visible = false;
+        }
+        else if(tableauDropDown.SelectedIndex == 1)
+        {
+            panel1.Visible = false;
+            panel2.Visible = true;
+            panel3.Visible = false;
+        }
+        else if(tableauDropDown.SelectedIndex == 2)
+        {
+            panel1.Visible = false;
+            panel2.Visible = false;
+            panel3.Visible = true;
+        }
+    }
 }

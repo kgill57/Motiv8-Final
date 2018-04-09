@@ -86,14 +86,14 @@
                 </td>
                 <td>
                     <asp:DropDownList ID="ddlCompanyValue" runat="server">
-                      <asp:ListItem Value="Health, Well Being and Safety of Team Members">Health, Well Being and Safety of Team Members</asp:ListItem>
+                      <%--<asp:ListItem Value="Health, Well Being and Safety of Team Members">Health, Well Being and Safety of Team Members</asp:ListItem>
                       <asp:ListItem Value="Community Involvement">Community Involvement</asp:ListItem>
                       <asp:ListItem Value="Education">Education</asp:ListItem>
                       <asp:ListItem Value="Customer Service">Customer Service</asp:ListItem>
                       <asp:ListItem Value="Retaining/Attracting New Customers">Retaining/Attracting New Customers</asp:ListItem>
                       <asp:ListItem Value="Process Improvement Initiatives">Process Improvement Initiatives</asp:ListItem>
                       <asp:ListItem Value="Leadership Development">Leadership Development</asp:ListItem>
-                      <asp:ListItem Value="Team Building">Team Building</asp:ListItem>
+                      <asp:ListItem Value="Team Building">Team Building</asp:ListItem>--%>
                   </asp:DropDownList>
                 </td>
             </tr>

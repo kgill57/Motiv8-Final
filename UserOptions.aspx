@@ -17,6 +17,7 @@
                             <li><a href ="/UserOptions.aspx">User Options</a></li>
                             <li><a href="/ViewRewards.aspx">View Rewards</a></li>
                             <li><a href ="/AddRewardProviders.aspx">View Reward Providers</a></li>
+                            <li><a href="/CompanyValues.aspx">View Company Values</a></li>
                             <li><a href="PendingApplications.aspx">Pending Applications</a></li>
                             <li><a href="AnalyticsPage.aspx">View Analytics</a></li>
                             <li><a href="/adminCalendar.aspx">Community Events</a></li>
@@ -73,10 +74,10 @@
                         <asp:Label ID="lblEmail" runat="server" Text='<%# Eval("Email") %>'></asp:Label>
                     </ItemTemplate>
                 </asp:TemplateField>
-                <asp:TemplateField HeaderText="Username">
+                <asp:TemplateField HeaderText="Nick Name">
                     <EditItemTemplate>
-                        <asp:TextBox ID="txtgvUsername" runat="server" MaxLength="50" Text='<%# Eval("NickName") %>'></asp:TextBox>
-                        <asp:RequiredFieldValidator ID="reqgvUsername" ControlToValidate="txtgvUsername" Text="(Required)" Display="Dynamic" Runat="server" Font-Bold="True" ForeColor="Red" ValidationGroup="validNewEmp"></asp:RequiredFieldValidator>
+                        <asp:TextBox ID="txtgvNickName" runat="server" MaxLength="50" Text='<%# Eval("NickName") %>'></asp:TextBox>
+                        <asp:RequiredFieldValidator ID="reqgvNickName" ControlToValidate="txtgvNickName" Text="(Required)" Display="Dynamic" Runat="server" Font-Bold="True" ForeColor="Red" ValidationGroup="validNewEmp"></asp:RequiredFieldValidator>
                     </EditItemTemplate>
                     <ItemTemplate>
                         <asp:Label ID="lblUsername" runat="server" Text='<%# Eval("NickName") %>'></asp:Label>

@@ -58,6 +58,7 @@
                             <li><a href ="/UserOptions.aspx">User Options</a></li>
                             <li><a href="/ViewRewards.aspx">View Rewards</a></li>
                             <li><a href ="/AddRewardProviders.aspx">View Reward Providers</a></li>
+                            <li><a href="/CompanyValues.aspx">View Company Values</a></li>
                             <li><a href="PendingApplications.aspx">Pending Applications</a></li>
                             <li><a href="AnalyticsPage.aspx">View Analytics</a></li>
                             <li><a href="/adminCalendar.aspx">Community Events</a></li>
