@@ -15,17 +15,25 @@ public partial class CompanyValues : System.Web.UI.Page
         try
         {
             lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+            loadProfilePicture();
+
+            // On initial page load, fill the gridview with all users in the database
+            if (!IsPostBack)
+                loadGridView();
+
+            if ((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
+
         }
         catch (Exception)
         {
             Response.Redirect("Default.aspx");
         }
 
-        // On initial page load, fill the gridview with all users in the database
-        if (!IsPostBack)
-            loadGridView();
-
-        loadProfilePicture();
+       
+        
     }
 
     protected void loadGridView()
@@ -43,7 +51,7 @@ public partial class CompanyValues : System.Web.UI.Page
 
             lblBalance.Text = totalBalance.ToString("$#.00");
 
-            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("SELECT ValueID, ValueName, LastUpdated, LastUpdatedBy FROM [CompanyValues];", sc);
+            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("SELECT ValueID, ValueName, LastUpdated, LastUpdatedBy FROM [CompanyValues] WHERE EmployerID = " + (int)Session["EmployerID"], sc);
             del.ExecuteNonQuery();
 
             valueGrid.DataSource = del.ExecuteReader();
@@ -63,23 +71,18 @@ public partial class CompanyValues : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        try
-        {
+        
 
-            SqlCommand select = new SqlCommand();
-            select.Connection = con;
+        SqlCommand select = new SqlCommand();
+        select.Connection = con;
 
-            select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
-            string currentPicture = (String)select.ExecuteScalar();
+        select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
+        string currentPicture = (String)select.ExecuteScalar();
 
-            profilePicture.ImageUrl = "~/Images/" + currentPicture;
-            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+        profilePicture.ImageUrl = "~/Images/" + currentPicture;
+        lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
 
-        }
-        catch (Exception)
-        {
-
-        }
+        
         con.Close();
     }
 

@@ -22,14 +22,14 @@ public partial class BuyRewards : System.Web.UI.Page
     {
         try
         {
-            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"] + "  $" + ((Decimal)Session["AccountBalance"]).ToString("0.##");
+            createRewardFeed();
         }
-
         catch (Exception)
         {
             Response.Redirect("Default.aspx");
         }
-        createRewardFeed();
+        
         
         
         loadProfilePicture();
@@ -175,13 +175,13 @@ public partial class BuyRewards : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        SqlCommand read = new SqlCommand("SELECT * FROM [dbo].[Reward] WHERE RewardQuantity > 0 ORDER BY [DateAdded] DESC", con);
+        SqlCommand read = new SqlCommand("SELECT Reward.*, RewardProvider.EmployerID FROM Reward INNER JOIN RewardProvider ON Reward.ProviderID = RewardProvider.ProviderID WHERE Reward.PendingReview = 0 AND RewardProvider.EmployerID = " + Convert.ToString((int)Session["EmployerID"]), con);
         SqlCommand balance = new SqlCommand("SELECT TotalBalance FROM Employer WHERE EmployerID =" + Convert.ToString((int)Session["EmployerID"]), con);
         double totalBalance = Convert.ToDouble(balance.ExecuteScalar());
 
 
         //Create Scaler to see how many transactions there are
-        SqlCommand scaler = new SqlCommand("SELECT COUNT(RewardID) FROM [dbo].[Reward] WHERE RewardQuantity > 0", con);
+        SqlCommand scaler = new SqlCommand("SELECT COUNT(Reward.RewardID) FROM Reward INNER JOIN RewardProvider ON Reward.ProviderID = RewardProvider.ProviderID WHERE Reward.PendingReview = 0 AND RewardProvider.EmployerID = " + Convert.ToString((int)Session["EmployerID"]), con);
         int arraySize = (int)scaler.ExecuteScalar();
 
         SqlDataReader reader = read.ExecuteReader();
@@ -201,8 +201,8 @@ public partial class BuyRewards : System.Web.UI.Page
                 pictureLink = "Images/admin.png";
             }
             reward[arrayCounter] = new Reward(Convert.ToInt32(reader.GetValue(0)), Convert.ToString(reader.GetValue(1)),
-                Convert.ToInt32(reader.GetValue(2)), Convert.ToDouble(reader.GetValue(3)), pictureLink, Convert.ToInt32(reader.GetValue(5)),
-                Convert.ToDateTime(reader.GetValue(6)));
+                Convert.ToInt32(reader.GetValue(2)), Convert.ToDouble(reader.GetValue(3)), pictureLink, Convert.ToInt32(reader.GetValue(6)),
+                Convert.ToDateTime(reader.GetValue(7)));
             arrayCounter++;
         }
 

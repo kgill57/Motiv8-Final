@@ -31,7 +31,8 @@
                     </div>
                 </nav>
                 <div style ="background-color: white;">
-                    <asp:GridView ID="valueGrid" runat="server" AutoGenerateEditButton="true" class="striped" AutoGenerateColumns="False" OnRowCancelingEdit="valueGrid_RowCancelingEdit" OnRowEditing="valueGrid_RowEditing" OnRowUpdating="valueGrid_RowUpdating">
+                    <asp:GridView ID="valueGrid" runat="server" AutoGenerateEditButton="true" class="striped" AutoGenerateColumns="False"
+                        ValidationGroup="companyValueValidation" OnRowCancelingEdit="valueGrid_RowCancelingEdit" OnRowEditing="valueGrid_RowEditing" OnRowUpdating="valueGrid_RowUpdating">
                         <Columns>
                             <asp:TemplateField HeaderText="ValueID">
                                 <ItemTemplate>
@@ -41,6 +42,7 @@
                             <asp:TemplateField HeaderText="Value Name">
                                 <EditItemTemplate>
                                     <asp:TextBox ID="txtValueName" runat="server" Text='<%# Eval("ValueName") %>'></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="txtValueNameValidator" ControlToValidate="txtValueName" Text="(Required)" Display="Dynamic" Runat="server" Font-Bold="True" ForeColor="Red" ValidationGroup="companyValueValidation"></asp:RequiredFieldValidator>
                                 </EditItemTemplate>
                                 <ItemTemplate>
                                     <asp:Label ID="lblValueName" runat="server" Text='<%# Eval("ValueName") %>'></asp:Label>
@@ -48,7 +50,7 @@
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="Last Updated">
                                 <EditItemTemplate>
-                                    <asp:TextBox ID="txtLastUpdated" runat="server" Text='<%# Eval("LastUpdated") %>'></asp:TextBox>
+                                    <asp:TextBox ID="txtLastUpdated" runat="server" Text='<%# Eval("LastUpdated") %>' ReadOnly="True"></asp:TextBox>
                                 </EditItemTemplate>
                                 <ItemTemplate>
                                     <asp:Label ID="lblLastUpdated" runat="server" Text='<%# Eval("LastUpdated") %>'></asp:Label>
@@ -56,7 +58,7 @@
                             </asp:TemplateField>
                             <asp:TemplateField HeaderText="Last Updated By">
                                 <EditItemTemplate>
-                                    <asp:TextBox ID="txtLastUpdatedBy" runat="server" Text='<%# Eval("LastUpdatedBy") %>'></asp:TextBox>
+                                    <asp:TextBox ID="txtLastUpdatedBy" runat="server" Text='<%# Eval("LastUpdatedBy") %>' ReadOnly="True"></asp:TextBox>
                                 </EditItemTemplate>
                                 <ItemTemplate>
                                     <asp:Label ID="lblLastUpdatedBy" runat="server" Text='<%# Eval("LastUpdatedBy") %>'></asp:Label>

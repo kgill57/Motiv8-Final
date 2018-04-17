@@ -23,24 +23,18 @@ public partial class AnalyticsPage : System.Web.UI.Page
         try
         {
             lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+            loadProfilePicture();
+
+            if ((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
         }
         catch (Exception)
         {
             Response.Redirect("Default.aspx");
         }
 
-
-
-        loadProfilePicture();
-
-        try
-        {
-
-        }
-        catch (Exception)
-        {
-
-        }
 
         panel1.Visible = true;
         panel2.Visible = false;

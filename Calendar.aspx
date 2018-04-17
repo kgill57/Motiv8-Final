@@ -80,10 +80,12 @@
                         <h5><asp:Label ID="lblUser" runat="server" Text="" CssClass ="user1"></asp:Label></h5>
                         <asp:Label ID="lblBalance" runat="server" ></asp:Label>
                     </div></li>
+
                   <li><a href="rpHome.aspx">Rewards</a></li>
                   <li><a href="Calendar.aspx">Calendar</a></li>
-               
-                  <li><a class="waves-effect" href="Default.aspx">Logout</a></li>
+                  <li><a href="rpSettings.aspx">Settings</a></li>
+                  <li><a href="Default.aspx">Logout</a></li>
+
                   <li><a><i class="material-icons nav1 modal-trigger" data-target="modal4"> help</i></a>
                   </ul>
             </div>
@@ -92,7 +94,6 @@
     <div style = "margin-left:auto; margin-right:auto; width:85%;">
     <nav class="feednav" >
         <div class="nav-wrapper">
-            <a class="brand-logo nav1 panel">Calender</a>
             <ul id="nav-mobile" class="right hide-on-med-and-down"> 
             
             </ul>

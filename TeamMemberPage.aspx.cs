@@ -18,13 +18,14 @@ public partial class TeamMemberPage : System.Web.UI.Page
     SqlCommand read;
     SqlCommand scaler;
     SqlConnection con;
+    
 
     protected void Page_Load(object sender, EventArgs e)
     {
         try
         {
             lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"] + "  $" + ((Decimal)Session["AccountBalance"]).ToString("0.##");
-            
+
             loadProfilePicture();
         }
         catch (Exception)
@@ -33,26 +34,11 @@ public partial class TeamMemberPage : System.Web.UI.Page
         }
 
         connectDB();
-        read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] ORDER BY [TransID] DESC", con);
-        scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE Private = 0", con);
-        
+        read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE EmployerID = "+ Convert.ToString((int)Session["EmployerID"]) +" AND Private = 0 ORDER BY [TransID] DESC", con);
+        scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE Private = 0 and EmployerID =" + Convert.ToString((int)Session["EmployerID"]), con);
+        loadNewsFeed();
 
-        if (!IsPostBack)
-        {
-            if (giverAndReceiver.SelectedIndex == 0)
-            {
-                read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] ORDER BY [TransID] DESC", con);
-                scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE Private = 0", con);
-                loadNewsFeed();
-            }
-            
-        }
-        else
-        {
-            loadNewsFeed();
-        }
-        
-        
+
 
     }
 
@@ -122,7 +108,7 @@ public partial class TeamMemberPage : System.Web.UI.Page
                 arrayCounter++;
             }
 
-            
+
         }
         con.Close();
         Panel1.Controls.Clear();
@@ -161,17 +147,18 @@ public partial class TeamMemberPage : System.Web.UI.Page
             {
                 finalRecieverPic = "Images/admin.png";
             }
-           
+
             panelPost[i] = new Panel();
             panelPost[i].Controls.Add(new LiteralControl("<div class=\"col s12 m8 offset-m2 l6 offset-l3 card-panel grey lighten-5 z-depth-1 row valign-wrapper\"> "));
-            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 20%\"> <img src = \""+ finalSenderPic + "\" alt = \"\" class=\"circle feed responsive-img\"> </br> <img src=\"" + finalRecieverPic + "\" alt=\"#\" class=\"circle feed responsive-img\"> </div>"));
-            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 59%\"> <span style = \"display: inline; width:60%; font-size:200%;\" cssclass=\"black-text\"><strong>" + transaction[i].getGiverNickName(transaction[i].getGiverID()) + "</strong> rewarded <strong>" + transaction[i].getReceiverNickName(transaction[i].getReceiverID()) + "</strong> $" + transaction[i].getRewardValue() + "</span > " +
-                " <br/><br/> <span style = \"display: inline; width:60%;\">" + transaction[i].getDescription() + "</span> <br/><br/> <span style = \"display: inline; width:60%;\"> Category: " + transaction[i].getCategory() + "</span> </div>"));
-            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: right; \"> <img src = \"" + getValueImageSrc(transaction[i].getValue()) + "\" alt = \"\" class=\"iconforvalue\" width = \"80%\"> </div>"));
+            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 10%\"> <img src = \"" + finalSenderPic + "\" alt = \"\" class=\"circle feed responsive-img\"> </div>"));
+            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 80%\"> <span style = \"display: inline; width:60%; font-size:200%;\" cssclass=\"black-text\"><strong>" + transaction[i].getGiverNickName(transaction[i].getGiverID()) + "</strong> rewarded <strong>" + transaction[i].getReceiverNickName(transaction[i].getReceiverID()) + "</strong> $" + transaction[i].getRewardValue() + "</span > " +
+                " <br/><br/> <span style = \"display: inline; width:60%;\">" + transaction[i].getDescription() + "</span> <br/><br/> <span style = \"display: inline; width:60%;\"> Value: " + transaction[i].getValue() + "</span>" +
+                " <br/> <span style = \"display: inline; width:60%;\"> Category: " + transaction[i].getCategory() + "</span> </div>"));
+            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 10%\"> <img src=\"" + finalRecieverPic + "\" alt=\"#\" class=\"circle feed responsive-img\"> </div>")); //<img src = \"" + getValueImageSrc(transaction[i].getValue()) + "\" alt = \"\" class=\"iconforvalue\" width = \"80%\">
             panelPost[i].Controls.Add(new LiteralControl("</div>"));
 
             Panel1.Controls.Add(panelPost[i]);
-            
+
         }
 
         con.Close();
@@ -181,72 +168,62 @@ public partial class TeamMemberPage : System.Web.UI.Page
         lblResult.Text = "";
         Popup.Visible = true;
         Popup.Enabled = true;
-        fillDropDown();
         loadValueDropDown();
+        fillSearchList();
     }
-    protected void fillDropDown()
-    {
-        con.Open();
-        scaler.CommandText = "SELECT * FROM [User] WHERE UserID > 1 AND UserID != " + Convert.ToString((int)Session["UserID"]);
 
-        scaler.Connection = con;
-
-        SqlDataAdapter da = new SqlDataAdapter(scaler);
-        DataTable dt = new DataTable();
-
-        da.Fill(dt);
-
-        drpUsers.DataSource = dt;
-        drpUsers.DataTextField = "NickName";
-        drpUsers.DataValueField = "NickName";
-        drpUsers.DataBind();
-
-        con.Close();
-
-    }
 
     protected void btnCancel_Click(object sender, EventArgs e)
     {
-        
+        closePopup();
+
+
+    }
+    //protected void giverAndReceiver_SelectedIndexChanged(object sender, EventArgs e)
+    //{
+    //    if (giverAndReceiver.SelectedIndex == 0)
+    //    {
+    //        read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] ORDER BY [TransID] DESC", con);
+    //        scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION]", con);
+    //        loadNewsFeed();
+    //    }
+    //    else if (giverAndReceiver.SelectedIndex == 1)
+    //    {
+    //        read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"] + " OR ReceiverID=" + (int)Session["UserID"] + " ORDER BY [TransID] DESC", con);
+    //        scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"] + " OR ReceiverID=" + (int)Session["UserID"], con);
+    //        loadNewsFeed();
+
+    //    }
+    //    else if (giverAndReceiver.SelectedIndex == 2)
+    //    {
+    //        read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"] + " ORDER BY [TransID] DESC", con);
+    //        scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"], con);
+    //        loadNewsFeed();
+    //    }
+    //    else if (giverAndReceiver.SelectedIndex == 3)
+    //    {
+    //        read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE ReceiverID=" + (int)Session["UserID"] + " ORDER BY [TransID] DESC", con);
+    //        scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE ReceiverID=" + (int)Session["UserID"], con);
+    //        loadNewsFeed();
+    //    }
+
+    //}
+    protected void closePopup()
+    {
         Popup.Visible = false;
         Popup.Enabled = false;
         lblResult.Text = "";
-        
-    }
-    protected void giverAndReceiver_SelectedIndexChanged(object sender, EventArgs e)
-    {
-        if (giverAndReceiver.SelectedIndex == 0)
-        {
-            read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] ORDER BY [TransID] DESC", con);
-            scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION]", con);
-            loadNewsFeed();
-        }
-        else if (giverAndReceiver.SelectedIndex == 1)
-        {
-            read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"] + " OR ReceiverID=" + (int)Session["UserID"] + " ORDER BY [TransID] DESC", con);
-            scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"] + " OR ReceiverID=" + (int)Session["UserID"], con);
-            loadNewsFeed();
-
-        }
-        else if (giverAndReceiver.SelectedIndex == 2)
-        {
-            read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"] + " ORDER BY [TransID] DESC", con);
-            scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE GiverID=" + (int)Session["UserID"], con);
-            loadNewsFeed();
-        }
-        else if (giverAndReceiver.SelectedIndex == 3)
-        {
-            read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE ReceiverID=" + (int)Session["UserID"] + " ORDER BY [TransID] DESC", con);
-            scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE ReceiverID=" + (int)Session["UserID"], con);
-            loadNewsFeed();
-        }
-
     }
     protected bool validEntry()
     {
-        if (txtDescription.Text == "")
+        if (lbResults.SelectedIndex == -1)
         {
-            lblResult.Text = "Please Fill Out All Fields";
+            lblResult.Text = "Please Select A Reciever";
+            return false;
+        }
+        else if (txtDescription.Text == "")
+        {
+            lblResult.Text = "Please Add A Description";
             return false;
         }
         return true;
@@ -290,8 +267,8 @@ public partial class TeamMemberPage : System.Web.UI.Page
                 {
 
                     cmdInsert.CommandText = "INSERT INTO [dbo].[Transaction] (CompanyValue, Category, Description, RewardValue, TransactionDate,"
-                        + " Private, GiverID, ReceiverID) VALUES (@CompanyValue, @Category, @Description, @RewardValue, @TransactionDate, @Private," +
-                        " @GiverID, @ReceiverID)";
+                        + " Private, GiverID, ReceiverID, EmployerID) VALUES (@CompanyValue, @Category, @Description, @RewardValue, @TransactionDate, @Private," +
+                        " @GiverID, @ReceiverID," + Convert.ToString((int)Session["EmployerID"]) + ")";
                     cmdInsert.Parameters.AddWithValue("@CompanyValue", post.getValue());
                     cmdInsert.Parameters.AddWithValue("@Category", post.getCategory());
                     cmdInsert.Parameters.AddWithValue("@Description", post.getDescription());
@@ -299,13 +276,18 @@ public partial class TeamMemberPage : System.Web.UI.Page
                     cmdInsert.Parameters.AddWithValue("@TransactionDate", post.getPostDate());
                     cmdInsert.Parameters.AddWithValue("@Private", post.getIsPrivate());
                     cmdInsert.Parameters.AddWithValue("@GiverID", (int)Session["UserID"]);
-                    cmdInsert.Parameters.AddWithValue("@ReceiverID", getRecieverID(drpUsers.SelectedValue));
+                    cmdInsert.Parameters.AddWithValue("@ReceiverID", getRecieverID(lbResults.SelectedValue));
 
                     cmdInsert.ExecuteNonQuery();
 
+                    System.Web.UI.HtmlControls.HtmlGenericControl NewDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+                    NewDiv.Attributes["class"] = "dialog";
+                    NewDiv.ID = "dialog";
+                    NewDiv.Attributes["title"] = "Reward Sent!";
+                    this.Controls.Add(NewDiv);
 
-                    lblResult.Text = "Reward Sent.";
-                    //notification();
+                    closePopup();
+                    loadNewsFeed();
 
                     sc.Close();
 
@@ -380,7 +362,7 @@ public partial class TeamMemberPage : System.Web.UI.Page
 
         con.Open();
         SqlCommand cmd = new SqlCommand("SELECT Email FROM [User] WHERE Username=@username", con);
-        cmd.Parameters.AddWithValue("@username", drpUsers.SelectedValue);
+        cmd.Parameters.AddWithValue("@username", this.Request.Form["txtTags"]);
 
         var fromAddress = new MailAddress("sdbasketball96@aol.com", "Elk Logistics Rewards");
         var toAddress = new MailAddress((String)cmd.ExecuteScalar(), "Test");
@@ -501,4 +483,36 @@ public partial class TeamMemberPage : System.Web.UI.Page
         return imgSrc;
     }
 
+    protected void fillSearchList()
+    {
+        //clear listbox
+        lbResults.Items.Clear();
+
+        //connect bd
+        SqlConnection con = new SqlConnection();
+        con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
+        con.Open();
+        String searchString = "SELECT[NickName] FROM[dbo].[User] WHERE [Admin] = 0 AND [ProviderID] IS NULL AND [EmployedStatus] = 1 AND [UserID] != " + Convert.ToString((int)Session["UserID"]) + " AND [SuperAdmin] = 0 AND [NickName] LIKE @Search AND EmployerID = " + Convert.ToString((int)Session["EmployerID"]);
+        SqlDataAdapter search = new SqlDataAdapter(searchString, con);
+        search.SelectCommand.Parameters.AddWithValue("@Search", txtSearch.Text + "%");
+        DataTable dt = new DataTable();
+        search.Fill(dt);
+
+        lbResults.DataSource = dt;
+        lbResults.DataValueField = "NickName";
+        lbResults.DataTextField = "NickName";
+        lbResults.DataBind();
+        con.Close();
+    }
+    public static void SetSession(string value)
+    {
+        HttpContext.Current.Session["Value"] = value;
+    }
+
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        fillSearchList();
+    }
+
 }
+

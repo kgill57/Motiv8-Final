@@ -37,22 +37,34 @@
     
 </div>
    
+<asp:Panel ID ="Popup" runat ="server" CssClass ="popupPanel" Visible ="false" Enabled ="false">
+    
+    <table>
+        <tr>
+            <td>
+                <asp:Label ID ="lblItemName" runat ="server" CssClass ="popupLabels"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <asp:Label ID="lblItemInfo" runat="server" Text=""></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <asp:Button ID ="btnOK" Text = "OK" OnClick ="ok_Click" CssClass ="btn" runat ="server" />
+            </td>
+        </tr>
+    </table>    
+    
+    
 
+</asp:Panel>
 
 
 
 </asp:Panel>
 
-
-<%--    
-<center>
-    <h1 class="display-4">My Rewards</h1>
-    <div class="jumbotron agent-1" style="width:78%; background-color:lightblue; opacity:0.88; border-radius:25px; padding-top:1px;">
-        <div class="container" Style ="width:75%; padding-top: 50px;">
-            <asp:Panel ID="Panel1" runat="server"></asp:Panel>
-        </div>
-    </div>
-</center>--%>
 
         
 

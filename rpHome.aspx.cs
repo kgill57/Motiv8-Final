@@ -7,6 +7,7 @@ using System.Web.UI.WebControls;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.IO;
 
 public partial class rpHome : System.Web.UI.Page
 {
@@ -16,16 +17,28 @@ public partial class rpHome : System.Web.UI.Page
     public static Panel[] panelFooter;
     public static Panel[] panelPicture;
     public static Reward[] reward;
+
+    public Reward newReward = new Reward();
     protected void Page_Load(object sender, EventArgs e)
     {
+        
+        Session["index"] = 3;
         con = new SqlConnection();
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-        if (!IsPostBack)
+        try
         {
-            loadProfilePicture();
-            
+            if (!IsPostBack)
+            {
+                loadProfilePicture();
+
+            }
+            loadRewardsFeed();
         }
-        loadRewardsFeed();
+        catch(Exception)
+        {
+            Response.Redirect("Default.aspx");
+        }
+        
     }
 
     protected void loadProfilePicture()
@@ -81,8 +94,8 @@ public partial class rpHome : System.Web.UI.Page
                 pictureLink = "Images/admin.png";
             }
             reward[arrayCounter] = new Reward(Convert.ToInt32(reader.GetValue(0)), Convert.ToString(reader.GetValue(1)),
-                Convert.ToInt32(reader.GetValue(2)), Convert.ToDouble(reader.GetValue(3)), pictureLink, Convert.ToInt32(reader.GetValue(5)),
-                Convert.ToDateTime(reader.GetValue(6)));
+                Convert.ToInt32(reader.GetValue(2)), Convert.ToDouble(reader.GetValue(3)), pictureLink, Convert.ToInt32(reader.GetValue(6)),
+                Convert.ToDateTime(reader.GetValue(7)));
             arrayCounter++;
         }
 
@@ -180,5 +193,58 @@ public partial class rpHome : System.Web.UI.Page
     protected void btnAddReward_Click(object sender, EventArgs e)
     {
         addReward.Visible = true;
+        addReward.Enabled = true;
+    }
+
+    protected void btnInsert_Click(object sender, EventArgs e)
+    {
+        newReward.setRewardName(txtRewardName.Text);
+        newReward.setRewardQuantity(Convert.ToInt32(txtRewardQuantity.Text));
+        newReward.setRewardAmount(Convert.ToDouble(txtRewardAmount.Text));
+        newReward.setCompanyID((int)Session["ProviderID"]);
+
+        // Get the name of the file
+        string fileName = Path.GetFileName(UploadPicture.PostedFile.FileName);
+
+        // Check if a picture was chosen
+        if (String.IsNullOrWhiteSpace(fileName) == true)
+        {
+            lblResult.Text = "You must choose a picture to upload.";
+            return;
+        }
+
+        // Save file to server map
+        UploadPicture.PostedFile.SaveAs(Server.MapPath("~/Images/") + fileName);
+
+        newReward.setRewardPicture("/Images/" + fileName);
+
+        SqlConnection con = new SqlConnection();
+        con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
+        con.Open();
+
+        SqlCommand cmd = new SqlCommand("INSERT INTO Reward VALUES (@rewardName, @rewardQuantity, @rewardAmount, @rewardPicture, 1, @providerID, @dateAdded)", con);
+        cmd.Parameters.AddWithValue("@rewardName", newReward.getRewardName());
+        cmd.Parameters.AddWithValue("@rewardQuantity", newReward.getRewardQuantity());
+        cmd.Parameters.AddWithValue("@rewardAmount", newReward.getRewardAmount());
+        cmd.Parameters.AddWithValue("@rewardPicture", newReward.getRewardPicture());
+        cmd.Parameters.AddWithValue("@providerID", newReward.getCompanyID());
+        cmd.Parameters.AddWithValue("@dateAdded", DateTime.Now.ToString("yyyy-MM-dd"));
+
+        cmd.ExecuteNonQuery();
+
+        con.Close();
+
+        lblResult.Text = "Reward Added!";
+
+        Response.Redirect(Request.RawUrl);
+        
+    }
+
+
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        addReward.Visible = false;
+        addReward.Enabled = false;
     }
 }

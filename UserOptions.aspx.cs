@@ -15,17 +15,23 @@ public partial class UserOptions : System.Web.UI.Page
         try
         {
             lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+            if (!IsPostBack)
+                fillGridView();
+
+            loadProfilePicture();
+
+            if ((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
         }
         catch (Exception)
         {
             Response.Redirect("Default.aspx");
         }
 
-        // On initial page load, fill the gridview with all users in the database
-        if (!IsPostBack)
-            fillGridView();
-
-        loadProfilePicture();
+        
+        
     }
 
     protected void loadProfilePicture()
@@ -34,23 +40,18 @@ public partial class UserOptions : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        try
-        {
+       
 
-            SqlCommand select = new SqlCommand();
-            select.Connection = con;
+        SqlCommand select = new SqlCommand();
+        select.Connection = con;
 
-            select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
-            string currentPicture = (String)select.ExecuteScalar();
+        select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
+        string currentPicture = (String)select.ExecuteScalar();
 
-            profilePicture.ImageUrl = "~/Images/" + currentPicture;
-            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+        profilePicture.ImageUrl = "~/Images/" + currentPicture;
+        //lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
 
-        }
-        catch (Exception)
-        {
-
-        }
+        
         con.Close();
     }
 
@@ -58,11 +59,6 @@ public partial class UserOptions : System.Web.UI.Page
     {
         Popup.Visible = true;
         Popup.Enabled = true;
-
-        
-
-
-       
     }
     protected void btnCancel_Click(object sender, EventArgs e)
     {
@@ -92,8 +88,6 @@ public partial class UserOptions : System.Web.UI.Page
         {
             try
             {
-                int adminBit;
-                adminBit = Convert.ToInt32(ddlAccountType.SelectedItem.Value);
 
                 String insertString;
 
@@ -101,7 +95,7 @@ public partial class UserOptions : System.Web.UI.Page
                 insertString = "INSERT INTO [dbo].[User] VALUES(@FName, Null,";
 
                 // SQL insert statement
-                insertString += "@LName, @Email, @nickName, NULL, " + adminBit + ", 0, " + (int)Session["UserID"] + ", NULL, @EmployerID, @AccountBalance, 1, '" + (String)Session["LName"] + "', '2018-01-01')";
+                insertString += "@LName, @Email, @nickName, NULL, 0, 0, 0, " + (int)Session["UserID"] + ", NULL, @EmployerID, @AccountBalance, 1, '" + (String)Session["LName"] + "', '2018-01-01')";
 
                 select.CommandText = insertString;
 
@@ -120,7 +114,7 @@ public partial class UserOptions : System.Web.UI.Page
 
                 // Set the EmployerID equal to the selected index of the corresponding drop down list + 1 to avoid indexing errors
                 select.Parameters.Add(new SqlParameter("@EmployerID", SqlDbType.Int));
-                select.Parameters["@EmployerID"].Value = ddlCompanies.SelectedIndex + 1;
+                select.Parameters["@EmployerID"].Value = (int)Session["EmployerID"];
 
                 // Set the new user's account balance equal to $0
                 select.Parameters.Add(new SqlParameter("@AccountBalance", SqlDbType.Money));
@@ -141,9 +135,8 @@ public partial class UserOptions : System.Web.UI.Page
                 txtFName.Text = "";
                 txtLName.Text = "";
                 txtEmail.Text = "";
+                txtNickName.Text = "";
                 lblError.Text = "";
-                ddlAccountType.SelectedIndex = 0;
-                ddlCompanies.SelectedIndex = 0;
                 Popup.Visible = false;
                 Popup.Enabled = false;
             }
@@ -181,7 +174,7 @@ public partial class UserOptions : System.Web.UI.Page
             lblBalance.Text = totalBalance.ToString("$#.00");
 
             System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("SELECT UserID, FName, LName, MI, Email, " +
-                "NickName, Admin, EmployedStatus, AccountBalance FROM [User];", sc);
+                "NickName, Admin, EmployedStatus, AccountBalance FROM [User] WHERE EmployerID = " +(int)Session["EmployerID"] +" AND UserID != " +(int)Session["UserID"]+ "AND SuperAdmin != 1 AND RewardProvider != 1", sc);
             del.ExecuteNonQuery();
 
             grdUsers.DataSource = del.ExecuteReader();
@@ -320,13 +313,5 @@ public partial class UserOptions : System.Web.UI.Page
         fillGridView();
     }
 
-    //protected void btnAutoFillUser_Click(object sender, EventArgs e)
-    //{
-    //    txtFName.Text = "Test";
-    //    txtMI.Text = "";
-    //    txtLName.Text = "User";
-    //    txtEmail.Text = "test@gmail.com";
-    //    txtUsername.Text = "testUser";
-    //}
 
 }

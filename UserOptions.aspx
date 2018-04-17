@@ -156,26 +156,9 @@
             <td>
                 <asp:TextBox ID="txtEmail" runat="server" CssClass ="validate"></asp:TextBox>
             </td>
-            <td>
-                <asp:Label ID="lblUserType" runat="server" Text="User Type:"></asp:Label>
-            </td>
-            <td>
-                <asp:DropDownList ID="ddlAccountType" runat="server">
-                    <asp:ListItem Value ="0">User</asp:ListItem>
-                    <asp:ListItem Value ="1">Admin</asp:ListItem>
-                </asp:DropDownList>
-            </td>
         </tr>
     </table>
     <table class="pagination">
-            <tr>
-                <td>
-                    <asp:Label ID="lblCompany" runat="server" Text="Company:"></asp:Label>
-                </td>
-                <td>
-                    <asp:DropDownList ID="ddlCompanies" runat="server" DataSourceID ="SqlDataSource1" DataTextField = "CompanyName" DataValueField = "CompanyName"></asp:DropDownList>
-                </td>
-            </tr>
             <tr>
                 <td>
                     <asp:Button ID="btnSubmitUser" runat="server" Text="Submit" CssClass = "btn" OnClick ="btnSubmitUser_Click"/>

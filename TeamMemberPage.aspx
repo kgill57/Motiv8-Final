@@ -1,10 +1,25 @@
 <%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true" CodeFile="TeamMemberPage.aspx.cs" Inherits="TeamMemberPage" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-
+           
+    
 <div style ="position: relative; top: 60px;">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+          <link rel="stylesheet" href="/resources/demos/style.css">
 
-
+          <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+          <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+          <script>
+            $(function() {
+                $("#dialog").dialog();
+            } );
+          </script>
+          <style type ="text/css">
+              .lblFix{
+                  position:relative;
+                  top: -100px;
+              }
+          </style>
     <div style = "float: left; width: 15%;">
     <ul id="slide-out" class="side-nav fixed" style = "width:15%;">
             <li><div class="user-view">
@@ -33,14 +48,14 @@
                 <li>
                     <asp:Button ID="btnGiveReward" runat="server" Text="Give Reward" CssClass="btn" OnClick="btnGiveReward_Click"/> 
                 </li>
-                <li>
+              <%--  <li>
                     <asp:DropDownList ID="giverAndReceiver" runat="server" OnSelectedIndexChanged="giverAndReceiver_SelectedIndexChanged" CssClass ="" AutoPostBack ="true">
                     <asp:ListItem>All Transactions</asp:ListItem>
                     <asp:ListItem>Your Transactions</asp:ListItem>
                     <asp:ListItem>Your Rewards Given</asp:ListItem>
                     <asp:ListItem>Your Rewards Received</asp:ListItem>
             </asp:DropDownList>
-                </li>
+                </li>--%>
            
             
             </ul>
@@ -49,7 +64,7 @@
     </nav>
     <asp:Panel ID ="Panel1" runat="server"></asp:Panel>
     </div>
-
+   
 </div>
            
     <%--<asp:Panel ID = "Notification" runat="server" BackColor ="White" CssClass ="popupNotification" Visible ="false" Enabled ="false">
@@ -62,10 +77,22 @@
         <table class="pagination">
             <tr>
                 <td>
-                    <asp:Label ID="lblName" runat="server" Text="Reciever Name:"></asp:Label>
+                    <asp:Label ID="lblName" runat="server" Text="Reciever Name:" CssClass ="lblFix"></asp:Label>
+                    
                 </td>
                 <td>
-                    <asp:DropDownList ID="drpUsers" runat="server"></asp:DropDownList>
+                    <table class="pagination">
+                        <tr>
+                            <td>
+                                <asp:TextBox ID ="txtSearch" runat="server"></asp:TextBox>
+                            </td>
+                            <td>
+                                <asp:Button ID="btnSearch" CssClass="btn" runat="server" Text="Search" OnClick ="btnSearch_Click"/>
+                            </td>
+
+                        </tr>
+                    </table>
+                    <asp:ListBox ID="lbResults" runat="server" Height = "200px"></asp:ListBox>
                 </td>
             </tr>
             <tr>
@@ -141,46 +168,5 @@
       
 
    
-<%--<center>
-    <link href="Style/desktop.css" rel="stylesheet" />
-    <link href="Style/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <script src="Scripts/Sidebar.js"></script>
-    <div id ="sidebar">
-        <div class="toggle-btn" onclick="toggleSidebar();">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <ul>
-            <li><asp:Image ID ="profilePicture" Height ="120px" Width ="120px" runat ="server"/></li>
-            <li> <asp:Label ID="lblUser" runat="server" Text=""></asp:Label></li>
-            <li><a href="TeamMemberPage.aspx">Home</a></li>
-            <li> <a href="RewardTeamMember.aspx">Reward Team Member</a></li>
-            <li> <a href="BuyRewards.aspx">Buy Rewards</a></li>
-            <li> <a href="MyRewards.aspx">My Rewards</a></li>
-            <li><a href="AccountSettingTeamMember.aspx">Account Settings</a></li>
-            <li><a href="CommunityPostFeed.aspx">Community Events</a></li>
-            <li><a href="/Default.aspx">Logout</a></li>
-        </ul>
-    </div>
-    <h1 class="display-4" style="color:white; font: bold;">News Feed</h1>
-    <div class="jumbotron agent-1" style="width:78%; background-color:lightblue; opacity: 0.83; border-radius:25px; padding-top:1px;">
-        <br />
-        <br />
-        <div>
-            <asp:DropDownList ID="giverAndReceiver" runat="server" OnSelectedIndexChanged="giverAndReceiver_SelectedIndexChanged" AutoPostBack="True">
-                <asp:ListItem>All Transactions</asp:ListItem>
-                <asp:ListItem>Your Transactions</asp:ListItem>
-                <asp:ListItem>Your Rewards Given</asp:ListItem>
-                <asp:ListItem>Your Rewards Received</asp:ListItem>
-            </asp:DropDownList>
-        </div>
-        <br />
-        <div class="container" style="padding-top: -20px;">
-            <asp:Panel ID="Panel1" runat="server"></asp:Panel>
-        </div>
-    </div>
-</center>--%>
 
 </asp:Content>

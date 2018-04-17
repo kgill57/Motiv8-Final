@@ -13,7 +13,13 @@ public partial class adminCalendar : System.Web.UI.Page
     {
         try
         {
+            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"] + "  $" + ((Decimal)Session["AccountBalance"]).ToString("0.##");
             loadProfilePicture();
+
+            if ((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
         }
         catch (Exception)
         {

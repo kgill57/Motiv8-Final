@@ -22,28 +22,7 @@
                             <li><a href="/Default.aspx">Logout</a></li>
                     </ul>
                 </div>
-    <%--<div id ="sidebar">
-        <div class="toggle-btn" onclick="toggleSidebar();">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        
-
-
-        <ul>
-            <li><asp:Image ID ="profilePicture" Height ="120px" Width ="120px" runat ="server"/></li>
-            <li> <asp:Label ID="lblUser" runat="server" Text=""></asp:Label></li>
-            <li><asp:Label ID="lblBalance" runat="server" ></asp:Label></li>
-            <li><a href="AdminPage.aspx">Home</a></li>
-            <li> <a href ="/UserOptions.aspx">User Options</a></li>
-            <li> <a href="/ViewRewards.aspx">View Rewards</a></li>
-            <li> <a href ="/AddRewardProviders.aspx">View Reward Providers</a></li>
-            <li><a href="AnalyticsPage.aspx">View Analytics</a></li>
-            <li><a href="/ManageCommunityPost.aspx">Community Events</a></li>
-            <li><a href="/Default.aspx">Logout</a></li>
-        </ul>
-    </div>--%>
+   
 <div style ="float: right; width: 85%;">
     <div style = "margin-left:auto; margin-right:auto; width:85%;">
     <nav class="feednav" >

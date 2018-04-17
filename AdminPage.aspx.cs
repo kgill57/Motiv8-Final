@@ -17,12 +17,16 @@ public partial class AdminPage : System.Web.UI.Page
             lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"] + "  $" + ((Decimal)Session["AccountBalance"]).ToString("0.##");
             loadNewsFeed();
             loadProfilePicture();
+
+            if((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
         }
         catch (Exception)
         {
             Response.Redirect("Default.aspx");
         }
-        //Calls the method to load the news feed
         
     }
 
@@ -64,14 +68,14 @@ public partial class AdminPage : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        SqlCommand read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] ORDER BY [TransID] DESC", con);
+        SqlCommand read = new SqlCommand("SELECT * FROM [dbo].[TRANSACTION] WHERE EmployerID = " + Convert.ToString((int)Session["EmployerID"]) + " ORDER BY [TransID] DESC", con);
         SqlCommand balance = new SqlCommand("SELECT TotalBalance FROM Employer WHERE EmployerID =" + Convert.ToString((int)Session["EmployerID"]), con);
         double totalBalance = Convert.ToDouble(balance.ExecuteScalar());
 
         lblBalance.Text = totalBalance.ToString("$#.00");
 
         //Create Scaler to see how many transactions there are
-        SqlCommand scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION]", con);
+        SqlCommand scaler = new SqlCommand("SELECT COUNT(TransID) FROM [dbo].[TRANSACTION] WHERE EmployerID =" + Convert.ToString((int)Session["EmployerID"]), con);
         int arraySize = (int)scaler.ExecuteScalar();
 
         SqlDataReader reader = read.ExecuteReader();
@@ -126,85 +130,23 @@ public partial class AdminPage : System.Web.UI.Page
             }
 
             //String recieverPic;
+            //panelPost[i] = new Panel();
+            //panelPost[i].Controls.Add(new LiteralControl("<div class=\"col s12 m8 offset-m2 l6 offset-l3 card-panel grey lighten-5 z-depth-1 row valign-wrapper\"> "));
+            //panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 20%\"> <img src = \"" + finalSenderPic + "\" alt = \"\" class=\"circle feed responsive-img\"> </br> <img src=\"" + finalRecieverPic + "\" alt=\"#\" class=\"circle feed responsive-img\"> </div>"));
+            //panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 59%\"> <span style = \"display: inline; width:60%; font-size:200%;\" cssclass=\"black-text\"><strong>" + transaction[i].getGiverNickName(transaction[i].getGiverID()) + "</strong> rewarded <strong>" + transaction[i].getReceiverNickName(transaction[i].getReceiverID()) + "</strong> $" + transaction[i].getRewardValue() + "</span > " +
+            //    " <br/><br/> <span style = \"display: inline; width:60%;\">" + transaction[i].getDescription() + "</span> <br/><br/> <span style = \"display: inline; width:60%;\"> Category: " + transaction[i].getCategory() + "</span> </div>"));
+            //panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: right; \"> <img src = \"" + getValueImageSrc(transaction[i].getValue()) + "\" alt = \"\" class=\"iconforvalue\" width = \"80%\"> </div>"));
+            //panelPost[i].Controls.Add(new LiteralControl("</div>"));
+
             panelPost[i] = new Panel();
             panelPost[i].Controls.Add(new LiteralControl("<div class=\"col s12 m8 offset-m2 l6 offset-l3 card-panel grey lighten-5 z-depth-1 row valign-wrapper\"> "));
-            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 20%\"> <img src = \"" + finalSenderPic + "\" alt = \"\" class=\"circle feed responsive-img\"> </br> <img src=\"" + finalRecieverPic + "\" alt=\"#\" class=\"circle feed responsive-img\"> </div>"));
-            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 59%\"> <span style = \"display: inline; width:60%; font-size:200%;\" cssclass=\"black-text\"><strong>" + transaction[i].getGiverNickName(transaction[i].getGiverID()) + "</strong> rewarded <strong>" + transaction[i].getReceiverNickName(transaction[i].getReceiverID()) + "</strong> $" + transaction[i].getRewardValue() + "</span > " +
-                " <br/><br/> <span style = \"display: inline; width:60%;\">" + transaction[i].getDescription() + "</span> <br/><br/> <span style = \"display: inline; width:60%;\"> Category: " + transaction[i].getCategory() + "</span> </div>"));
-            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: right; \"> <img src = \"" + getValueImageSrc(transaction[i].getValue()) + "\" alt = \"\" class=\"iconforvalue\" width = \"80%\"> </div>"));
+            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 10%\"> <img src = \"" + finalSenderPic + "\" alt = \"\" class=\"circle feed responsive-img\"> </div>"));
+            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 80%\"> <span style = \"display: inline; width:60%; font-size:200%;\" cssclass=\"black-text\"><strong>" + transaction[i].getGiverNickName(transaction[i].getGiverID()) + "</strong> rewarded <strong>" + transaction[i].getReceiverNickName(transaction[i].getReceiverID()) + "</strong> $" + transaction[i].getRewardValue() + "</span > " +
+                " <br/><br/> <span style = \"display: inline; width:60%;\">" + transaction[i].getDescription() + "</span> <br/><br/> <span style = \"display: inline; width:60%;\"> Value: " + transaction[i].getValue() + "</span>" +
+                " <br/> <span style = \"display: inline; width:60%;\"> Category: " + transaction[i].getCategory() + "</span> </div>"));
+            panelPost[i].Controls.Add(new LiteralControl("<div style = \"float: left; width: 10%\"> <img src=\"" + finalRecieverPic + "\" alt=\"#\" class=\"circle feed responsive-img\"> </div>")); //<img src = \"" + getValueImageSrc(transaction[i].getValue()) + "\" alt = \"\" class=\"iconforvalue\" width = \"80%\">
             panelPost[i].Controls.Add(new LiteralControl("</div>"));
-
-
-
-
-
-
-
-
-
-
-            //panelHeader[i] = new Panel();
-
-            //Label[] labelPost = new Label[5];
-
-
-            //labelPost[0] = new Label();
-
-            //if (transaction[i].getIsPrivate() == true)
-            //{
-            //    labelPost[0].Text = ("Anonymous" + " gifted " + "Anonymous");
-            //}
-            //else
-            //{
-
-            //    SqlCommand select = new SqlCommand("SELECT [FName] + ' ' + [LName] FROM [dbo].[User] WHERE [UserID] = " + transaction[i].getGiverID(), con);
-            //    String giver = (String)select.ExecuteScalar();
-
-            //    select.CommandText = "SELECT [FName] + ' ' + [LName] FROM [dbo].[User] WHERE [UserID] = " + transaction[i].getReceiverID();
-            //    String reciever = (String)select.ExecuteScalar();
-
-            //    labelPost[0].Text = (giver + " gifted " + reciever + " $" + transaction[i].getRewardValue());
-            //}
-
-            //panelHeader[i].Controls.Add(labelPost[0]);
-
-            //labelPost[1] = new Label();
-            //labelPost[1].Text = ("Value: " + transaction[i].getValue());
-            //panelPost[i].Controls.Add(labelPost[1]);
-
-            //panelPost[i].Controls.Add(new LiteralControl("<br />"));
-
-            //labelPost[2] = new Label();
-            //labelPost[2].Text = ("Category: " + transaction[i].getCategory());
-            //panelPost[i].Controls.Add(labelPost[2]);
-
-            //panelPost[i].Controls.Add(new LiteralControl("<br />"));
-
-            //labelPost[3] = new Label();
-            //labelPost[3].Text = ("Description: " + transaction[i].getDescription());
-            //panelPost[i].Controls.Add(labelPost[3]);
-
-            //panelPost[i].Controls.Add(new LiteralControl("<br />"));
-
-            //labelPost[4] = new Label();
-
-            //TimeSpan difference = DateTime.Now - transaction[i].getPostDate();
-            //labelPost[4].Text = "Posted " + Convert.ToString((int)difference.TotalMinutes) + " Minutes Ago";
-
-            //panelPost[i].Controls.Add(labelPost[4]);
-
-
-
-            //mainPanels[i].CssClass = "w3 - card - 4";
-            //panelHeader[i].CssClass = "w3-container w3-blue";
-            //panelPost[i].CssClass = "w3-container";
-
-            //mainPanels[i].Style.Add("text-align", "left");
-            //panelHeader[i].Style.Add("text-align", "left");
-
-            //mainPanels[i].Style.Add("margin-top", "4px");
-            //mainPanels[i].Style.Add("margin-bottom", "16px");
-            //panelHeader[i].Style.Add("font-size", "200%");
+            
 
             Panel1.Controls.Add(panelPost[i]);
             //mainPanels[i].Controls.Add(panelHeader[i]);

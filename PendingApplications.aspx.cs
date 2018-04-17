@@ -12,8 +12,25 @@ public partial class PendingApplications : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (!IsPostBack)
-            fillGridView();
+        try
+        {
+            if(!IsPostBack)
+            {
+                lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"] + "  $" + ((Decimal)Session["AccountBalance"]).ToString("0.##");
+                fillGridView();
+                loadProfilePicture();
+            }
+
+            if ((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
+
+        }
+        catch (Exception)
+        {
+            Response.Redirect("Default.aspx");
+        }
     }
 
     public void fillGridView()
@@ -30,7 +47,7 @@ public partial class PendingApplications : System.Web.UI.Page
 
             lblBalance.Text = totalBalance.ToString("$#.00");
 
-            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("SELECT * FROM RewardProvider WHERE PendingReview = 1;", sc);
+            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("SELECT * FROM RewardProvider WHERE Approved = 0 AND EmployerID = " +(int)Session["EmployerID"], sc);
             del.ExecuteNonQuery();
 
             grdProviders.DataSource = del.ExecuteReader();
@@ -50,83 +67,58 @@ public partial class PendingApplications : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        try
-        {
+        
 
-            SqlCommand select = new SqlCommand();
-            select.Connection = con;
+        SqlCommand select = new SqlCommand();
+        select.Connection = con;
 
-            select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
-            string currentPicture = (String)select.ExecuteScalar();
+        select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
+        string currentPicture = (String)select.ExecuteScalar();
 
-            profilePicture.ImageUrl = "~/Images/" + currentPicture;
-            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+        profilePicture.ImageUrl = "~/Images/" + currentPicture;
+        lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
 
-        }
-        catch (Exception)
-        {
-
-        }
+        
         con.Close();
     }
 
-    protected void btnViewApp_Click(object sender, EventArgs e)
+
+
+    protected void grdProviders_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
     {
-        Button btn = (Button)sender;
-        GridViewRow row = (GridViewRow)btn.NamingContainer;
-        // assuming you store the ID in a Hiddenield:
-        int rowIndex = row.RowIndex + 1;
-
-        //int providerID = Convert.ToInt16(grdProviders.Rows[RowIndex].Cells[0].Text);
-
-        SqlConnection con = new SqlConnection();
-        con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-        con.Open();
-
-        SqlCommand cmd = new SqlCommand();
-        cmd.CommandText = "SELECT ProviderName, ProviderEmail, ProviderDescription FROM [Application] WHERE ApplicationID = " + rowIndex;
-        cmd.Connection = con;
-        SqlDataReader reader = cmd.ExecuteReader();
-
-        while (reader.Read())
-        {
-            string name = Convert.ToString(reader.GetValue(0));
-            string email = Convert.ToString(reader.GetValue(1));
-            string desc = Convert.ToString(reader.GetValue(2));
-
-            txtCompanyName.Text = name;
-            txtEmail.Text = email;
-            txtDesc.Text = desc;
-        }
-
-        appPanel.Visible = true;
+        grdProviders.EditIndex = -1;
+        fillGridView();
     }
 
-    protected void btnExitApp_Click(object sender, EventArgs e)
+    protected void grdProviders_RowEditing(object sender, GridViewEditEventArgs e)
     {
-        appPanel.Visible = false;
-        Response.Redirect(Request.RawUrl);
+        grdProviders.EditIndex = e.NewEditIndex;
+        fillGridView();
     }
 
-    protected void btnApprove_Click(object sender, EventArgs e)
+    protected void grdProviders_RowUpdating(object sender, GridViewUpdateEventArgs e)
     {
-        SqlConnection con = new SqlConnection();
-        con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-        con.Open();
+        System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
+        sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
 
-        SqlCommand cmd = new SqlCommand();
-        cmd.CommandText = "UPDATE RewardProvider SET PendingReview = 0 WHERE ProviderName = @providerName";
-        cmd.Parameters.AddWithValue("@providerName", txtCompanyName.Text);
-        cmd.Connection = con;
+        var ddl = grdProviders.Rows[e.RowIndex].FindControl("drpApproved") as DropDownList;
+
+        sc.Open();
+
+        SqlCommand cmd = new SqlCommand("UPDATE [RewardProvider] SET Approved = @approved WHERE ProviderEmail = @email", sc);
+        cmd.Parameters.AddWithValue("@approved", ddl.SelectedIndex);
+        cmd.Parameters.AddWithValue("@email", (grdProviders.Rows[e.RowIndex].FindControl("lblProviderEmail") as Label).Text.ToString());
 
         cmd.ExecuteNonQuery();
 
-        con.Close();
+        cmd.CommandText = "UPDATE [User] SET EmployedStatus = 1 WHERE Email = @email";
+        cmd.ExecuteNonQuery();
 
-        lblResult.Text = "Application Approved!";
+        sc.Close();
 
-        txtCompanyName.Text = "";
-        txtDesc.Text = "";
-        txtEmail.Text = "";
+
+        Response.Redirect(Request.RawUrl);
     }
+
+   
 }

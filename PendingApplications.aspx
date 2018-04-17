@@ -36,70 +36,32 @@
 
             <div style ="background-color: white; padding: 20px;">
 
-                <asp:Panel ID="appPanel" CssClass="popupPanel"  runat="server" Visible="false" >
-                    <table>
-                        <tr>
-                            <td>
-                                <asp:Label ID="lblCompanyName" runat="server" Text="Company Name"></asp:Label>
-                                <asp:TextBox ID="txtCompanyName" runat="server" CssClass="input-field"></asp:TextBox>
-                            </td>
-                            <td>
-                                <asp:Label ID="lblEmail" runat="server" Text="Company Email"></asp:Label>
-                                <asp:TextBox ID="txtEmail" runat="server" CssClass="input-field"></asp:TextBox>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <asp:Label ID="lblDesc" runat="server" Text="Why do you want to be a part of Motiv8?"></asp:Label>
-                                <asp:TextBox ID="txtDesc" runat="server" TextMode="MultiLine" Height="113px" Width="315px" CssClass="input-field"></asp:TextBox>
-                            </td>
-                            <td>
-                                <asp:Button ID="btnExitApp" runat="server" Text="Close" CssClass="btn" OnClick="btnExitApp_Click" />
-                            </td>
-                            <td>
-                                <asp:Button ID="btnApprove" runat="server" Text="Approve" CssClass="btn" OnClick="btnApprove_Click" />
-                            </td>
-                        </tr>
-                    </table>
-
-                    <asp:Label ID="lblResult" runat="server" Text=""></asp:Label>
-                </asp:Panel>
-
                 <asp:GridView ID="grdProviders" ValidationGroup="validNewProvider" runat="server"  class="striped" style="padding:40px;"
-                           DataKeyNames="ProviderID" ShowHeaderWhenEmpty="True" AutoGenerateColumns="false" >
-                        <Columns>                            
-                            <asp:TemplateField HeaderText="Provider ID">
-                                <ItemTemplate>
-                                    <asp:Label ID="lblgvProviderID" runat="server" Text='<%# Eval("ProviderID") %>'></asp:Label>
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Provider Name">
-                                <EditItemTemplate>
-                                    <asp:TextBox ID="txtgvProviderName" runat="server" Text='<%# Eval("ProviderName") %>'></asp:TextBox>
-                                    <asp:RequiredFieldValidator ID="reqgvProviderName" ControlToValidate="txtgvProviderName" Text="(Required)" Display="Dynamic" Runat="server" Font-Bold="True" ForeColor="Red" ValidationGroup="validNewProvider"></asp:RequiredFieldValidator>
-                                </EditItemTemplate>
-                                <ItemTemplate>
-                                    <asp:Label ID="lblgvProviderName" runat="server" Text='<%# Eval("ProviderName") %>'></asp:Label>
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Provider Email">
-                                <EditItemTemplate>
-                                    <asp:TextBox ID="txtgvProviderEmail" runat="server" Text='<%# Eval("ProviderEmail") %>' TextMode="SingleLine"></asp:TextBox>
-                                    <asp:RequiredFieldValidator ID="reqgvProviderEmail" ControlToValidate="txtgvProviderEmail" Text="(Required)" Display="Dynamic" Runat="server" Font-Bold="True" ForeColor="Red" ValidationGroup="validNewProvider"></asp:RequiredFieldValidator>
-                                </EditItemTemplate>
-                                <ItemTemplate>
-                                    <asp:Label ID="lblgvProviderEmail" runat="server" Text='<%# Eval("ProviderEmail") %>'></asp:Label>
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:TemplateField HeaderText="View Application">
-                                <ItemTemplate>
-                                    <asp:Button ID="btnViewApp" runat="server" Text="View Application" OnClick="btnViewApp_Click" CommandName="ViewApp" CssClass="btn" />
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                        </Columns>
-                        <EmptyDataTemplate>
-                            <asp:Label ID="lvlgvNoProvider" runat="server" Text="No Records Found"></asp:Label>
-                        </EmptyDataTemplate>
+                           DataKeyNames="ProviderID" ShowHeaderWhenEmpty="True" AutoGenerateColumns="False" AutoGenerateEditButton="true" OnRowCancelingEdit="grdProviders_RowCancelingEdit" OnRowEditing="grdProviders_RowEditing" OnRowUpdating="grdProviders_RowUpdating">
+                    <Columns>
+                        <asp:TemplateField HeaderText="Provider Name">
+                            <ItemTemplate>
+                                <asp:Label ID="lblProviderName" runat="server" Text='<%# Eval("ProviderName") %>'></asp:Label>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Provider Email">
+                            <ItemTemplate>
+                                <asp:Label ID="lblProviderEmail" runat="server" Text='<%# Eval("ProviderEmail") %>'></asp:Label>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Approved">
+                            <EditItemTemplate>
+                                <asp:DropDownList ID="drpApproved" runat="server" SelectedValue='<%# Bind("Approved") %>'>
+                                    <asp:ListItem Value="1">Not Approved</asp:ListItem>
+                                    <asp:ListItem Value="0">Approved</asp:ListItem>
+                                </asp:DropDownList>
+                            </EditItemTemplate>
+                            <ItemTemplate>
+                                <asp:Label ID="lblApproved" runat="server" Text='<%# Eval("Approved") %>'></asp:Label>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                    </Columns>
+                        
                 </asp:GridView>
 
             </div>

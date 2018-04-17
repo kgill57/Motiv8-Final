@@ -14,13 +14,22 @@ public partial class rpSettings : System.Web.UI.Page
     SqlConnection con;
     protected void Page_Load(object sender, EventArgs e)
     {
+        Session["index"] = 3;
         con = new SqlConnection();
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
 
-        if(!IsPostBack)
+        try
         {
-            loadProfilePicture();
+            if (!IsPostBack)
+            {
+                loadProfilePicture();
+            }
         }
+        catch(Exception)
+        {
+            Response.Redirect("Default.aspx");
+        }
+        
         
     }
 
@@ -31,7 +40,12 @@ public partial class rpSettings : System.Web.UI.Page
 
         if (txtNewPass.Text == txtCurrentPass.Text || txtConfirmNewPass.Text == txtCurrentPass.Text)
         {
-            lblResult.Text = "Your new password cannot be the same as your current password.";
+            System.Web.UI.HtmlControls.HtmlGenericControl NewDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+            NewDiv.Attributes["class"] = "dialog";
+            NewDiv.ID = "dialog";
+            NewDiv.Attributes["title"] = "Password Change";
+            NewDiv.InnerText = "Your new password cannot be the same as your old password.";
+            this.Controls.Add(NewDiv);
             return;
         }
 
@@ -51,7 +65,12 @@ public partial class rpSettings : System.Web.UI.Page
         {
             if (String.IsNullOrWhiteSpace(txtNewPass.Text) == true)
             {
-                lblResult.Text = "You must enter a new password.";
+                System.Web.UI.HtmlControls.HtmlGenericControl NewDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+                NewDiv.Attributes["class"] = "dialog";
+                NewDiv.ID = "dialog";
+                NewDiv.Attributes["title"] = "Password Change";
+                NewDiv.InnerText = "You must enter a new password.";
+                this.Controls.Add(NewDiv);
             }
 
             else if (txtNewPass.Text == txtConfirmNewPass.Text)
@@ -60,54 +79,37 @@ public partial class rpSettings : System.Web.UI.Page
                 select.CommandText = "UPDATE [dbo].[Password] SET [PasswordHash] = @PasswordHash WHERE [UserID] =" + Convert.ToString((int)Session["UserID"]);
                 select.Parameters.AddWithValue("@PasswordHash", newPassHash);
                 select.ExecuteNonQuery();
-                lblResult.Text = "New password confirmed!";
+                System.Web.UI.HtmlControls.HtmlGenericControl NewDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+                NewDiv.Attributes["class"] = "dialog";
+                NewDiv.ID = "dialog";
+                NewDiv.Attributes["title"] = "Password Change";
+                NewDiv.InnerText = "Password successfully changed!";
+                this.Controls.Add(NewDiv);
             }
 
             else
             {
-                lblResult.Text = "New passwords do not match.";
+                System.Web.UI.HtmlControls.HtmlGenericControl NewDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+                NewDiv.Attributes["class"] = "dialog";
+                NewDiv.ID = "dialog";
+                NewDiv.Attributes["title"] = "Password Change";
+                NewDiv.InnerText = "Passwords do not match.";
+                this.Controls.Add(NewDiv);
             }
 
         }
         else
         {
-            lblResult.Text = "Incorrect password.";
+            System.Web.UI.HtmlControls.HtmlGenericControl NewDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+            NewDiv.Attributes["class"] = "dialog";
+            NewDiv.ID = "dialog";
+            NewDiv.Attributes["title"] = "Password Change";
+            NewDiv.InnerText = "Incorrect password.";
+            this.Controls.Add(NewDiv);
         }
 
         con.Close();
-    }
-
-    protected void btnUploadPhoto_Click(object sender, EventArgs e)
-    {
-        // Get the name of the file
-        string fileName = Path.GetFileName(UploadPicture.PostedFile.FileName);
-
-        // Check if a picture was chosen
-        if (String.IsNullOrWhiteSpace(fileName) == true)
-        {
-            lblResult.Text = "You must choose a picture to upload.";
-            return;
-        }
-
-        // Save file to server map
-        UploadPicture.PostedFile.SaveAs(Server.MapPath("~/Images/") + fileName);
-
-
-        
-        SqlCommand upload = new SqlCommand();
-        upload.Connection = con;
-
-        // Change the user's profile picture
-        upload.CommandText = "UPDATE [dbo].[RewardProvider] SET [ProviderPicture] = @ProfilePicture WHERE [ProviderID] =" + getProviderID();
-        upload.Parameters.AddWithValue("@ProfilePicture", fileName);
-        con.Open();
-        upload.ExecuteNonQuery();
-        con.Close();
-
-        lblResult.Text = "Picture uploaded";
-        loadProfilePicture();
-    }
-
+    }      
     protected int getProviderID()
     {
         con.Close();
@@ -132,7 +134,12 @@ public partial class rpSettings : System.Web.UI.Page
         // Check if a picture was chosen
         if (String.IsNullOrWhiteSpace(fileName) == true)
         {
-            lblResult.Text = "You must choose a picture to upload.";
+            System.Web.UI.HtmlControls.HtmlGenericControl PicFailDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+            PicFailDiv.Attributes["class"] = "dialog";
+            PicFailDiv.ID = "dialog";
+            PicFailDiv.Attributes["title"] = "Picture Change";
+            PicFailDiv.InnerText = "You must choose a picture to upload.";
+            this.Controls.Add(PicFailDiv);
             return;
         }
 
@@ -140,10 +147,9 @@ public partial class rpSettings : System.Web.UI.Page
         UploadPicture.PostedFile.SaveAs(Server.MapPath("~/Images/") + fileName);
 
 
-        con.Open();
+
         SqlCommand upload = new SqlCommand();
         upload.Connection = con;
-        
 
         // Change the user's profile picture
         upload.CommandText = "UPDATE [dbo].[RewardProvider] SET [ProviderPicture] = @ProfilePicture WHERE [ProviderID] =" + getProviderID();
@@ -152,29 +158,30 @@ public partial class rpSettings : System.Web.UI.Page
         upload.ExecuteNonQuery();
         con.Close();
 
-        lblResult.Text = "Picture uploaded";
+        System.Web.UI.HtmlControls.HtmlGenericControl PicDiv = new System.Web.UI.HtmlControls.HtmlGenericControl();
+        PicDiv.Attributes["class"] = "dialog";
+        PicDiv.ID = "dialog";
+        PicDiv.Attributes["title"] = "Picture Change";
+        PicDiv.InnerText = "Picture successfully uploaded!";
+        this.Controls.Add(PicDiv);
+        loadProfilePicture();
     }
 
     protected void loadProfilePicture()
     {
         con.Open();
 
-        try
-        {
-            SqlCommand select = new SqlCommand();
-            select.Connection = con;
+        
+        SqlCommand select = new SqlCommand();
+        select.Connection = con;
 
-            select.CommandText = "SELECT ProviderPicture FROM [dbo].[RewardProvider] WHERE ProviderID =" + getProviderID();
-            con.Open();
-            string currentPicture = (String)select.ExecuteScalar();
+        select.CommandText = "SELECT ProviderPicture FROM [dbo].[RewardProvider] WHERE ProviderID =" + getProviderID();
+        con.Open();
+        string currentPicture = (String)select.ExecuteScalar();
 
-            profilePicture.ImageUrl = "~/Images/" + currentPicture;
-            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
-        }
-        catch(Exception)
-        {
-
-        }
+        profilePicture.ImageUrl = "~/Images/" + currentPicture;
+        lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+       
 
         con.Close();
     }

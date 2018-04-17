@@ -16,16 +16,24 @@ public partial class AddRewardProviders : System.Web.UI.Page
         try
         {
             lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+            loadProfilePicture();
+
+            if (!IsPostBack)
+                fillGridView();
+
+            if ((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
         }
         catch (Exception)
         {
             Response.Redirect("Default.aspx");
         }
 
-        if (!IsPostBack)
-            fillGridView();
+       
 
-        loadProfilePicture();
+        
     }
 
     public void fillpayPanel(int providerID)
@@ -37,10 +45,11 @@ public partial class AddRewardProviders : System.Web.UI.Page
         SqlCommand cmd = new SqlCommand("SELECT COUNT(ProviderID) FROM RewardProvider", con);
         int rows = (int)cmd.ExecuteScalar();
         cmd.CommandText = "";
-        cmd.CommandText = "SELECT RewardProvider.ProviderName, RewardProvider.ProviderEmail, SUM(Reward.RewardAmount) AS [Total] FROM Reward, RewardProvider, RewardEarned WHERE RewardProvider.ProviderID = Reward.ProviderID AND Reward.RewardID = RewardEarned.RewardID AND RewardProvider.ProviderID = " + providerID + " GROUP BY RewardProvider.ProviderName, RewardProvider.ProviderEmail";
+        cmd.CommandText = "SELECT RewardProvider.ProviderName, RewardProvider.ProviderEmail, SUM(Reward.RewardAmount) AS [Total] FROM Reward, RewardProvider, RewardEarned WHERE RewardProvider.ProviderID = Reward.ProviderID AND Reward.RewardID = RewardEarned.RewardID AND RewardProvider.ProviderID = " + providerID + " AND RewardProvider.EmployerID = " +(int)Session["EmployerID"]+ " GROUP BY RewardProvider.ProviderName, RewardProvider.ProviderEmail";
 
         cmd.Connection = con;
         SqlDataReader reader = cmd.ExecuteReader();
+
 
         //array of panels
         Panel[] panelArray = new Panel[rows];
@@ -92,23 +101,18 @@ public partial class AddRewardProviders : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        try
-        {
+        
 
-            SqlCommand select = new SqlCommand();
-            select.Connection = con;
+        SqlCommand select = new SqlCommand();
+        select.Connection = con;
 
-            select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
-            string currentPicture = (String)select.ExecuteScalar();
+        select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
+        string currentPicture = (String)select.ExecuteScalar();
 
-            profilePicture.ImageUrl = "~/Images/" + currentPicture;
-            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+        profilePicture.ImageUrl = "~/Images/" + currentPicture;
+        lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
 
-        }
-        catch (Exception)
-        {
-
-        }
+        
         con.Close();
     }
 
@@ -126,7 +130,7 @@ public partial class AddRewardProviders : System.Web.UI.Page
 
             lblBalance.Text = totalBalance.ToString("$#.00");
 
-            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("SELECT * FROM RewardProvider;", sc);
+            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("SELECT * FROM RewardProvider WHERE EmployerID = " + (int)Session["EmployerID"], sc);
             del.ExecuteNonQuery();
 
             grdProviders.DataSource = del.ExecuteReader();
@@ -140,91 +144,9 @@ public partial class AddRewardProviders : System.Web.UI.Page
         }
     }
 
-    protected void grdProviders_RowEditing(object sender, GridViewEditEventArgs e)
-    {
-        grdProviders.EditIndex = e.NewEditIndex;
-        fillGridView();
-    }
 
-    protected void grdProviders_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-    {
-        grdProviders.EditIndex = -1;
-        fillGridView();
-    }
+   
 
-    protected void grdProviders_RowUpdating(object sender, GridViewUpdateEventArgs e)
-    {
-
-        Boolean textError = true;
-        System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
-        sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-
-        //Check if the project name Text box is empty
-        if (String.IsNullOrEmpty((grdProviders.Rows[e.RowIndex].FindControl("txtgvProviderName") as TextBox).Text.ToString()))
-        {
-            //projectNameError.Visible = true;
-            //projectNameError.Text = "The project name cannot be empty";
-            textError = false;
-        }
-
-        //Check if the Project Description Text box is empty
-        if (String.IsNullOrEmpty((grdProviders.Rows[e.RowIndex].FindControl("txtgvProviderEmail") as TextBox).Text.ToString()))
-        {
-            //projectDescriptionErrror.Visible = true;
-            //projectDescriptionErrror.Text = "Field cannot be empty";
-            textError = false;
-        }
-
-        if (textError)
-        {
-            sc.Open();
-            // Declare the query string.
-            try
-            {
-                System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("UPDATE RewardProvider SET ProviderName=@newProvName, " +
-                    "ProviderEmail=@newProvEmail WHERE ProviderID=@providerID", sc);
-                del.Parameters.AddWithValue("@newProvName", char.ToUpper((grdProviders.Rows[e.RowIndex].FindControl("txtgvProviderName") as TextBox).Text[0])
-                    + (grdProviders.Rows[e.RowIndex].FindControl("txtgvProviderName") as TextBox).Text.Substring(1));
-                del.Parameters.AddWithValue("@newProvEmail", (grdProviders.Rows[e.RowIndex].FindControl("txtgvProviderEmail") as TextBox).Text.ToString());
-                del.Parameters.AddWithValue("@providerID", Convert.ToInt32(grdProviders.DataKeys[e.RowIndex].Value.ToString()));
-                del.ExecuteNonQuery();
-                sc.Close();
-                grdProviders.EditIndex = -1;
-                fillGridView();
-            }
-            catch
-            {
-
-            }
-
-
-        }
-
-
-
-    }
-
-    protected void grdProviders_RowDeleting(object sender, GridViewDeleteEventArgs e)
-    {
-        try
-        {
-            System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
-            sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-            sc.Open();
-            //Declare the query string.
-
-            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("DELETE" +
-                " FROM RewardProvider WHERE ProviderID = @providerID;", sc);
-            del.Parameters.AddWithValue("@providerID", Convert.ToInt32(grdProviders.DataKeys[e.RowIndex].Value.ToString()));
-            del.ExecuteNonQuery();
-            sc.Close();
-            fillGridView();
-        }
-        catch
-        {
-
-        }
-    }
 
 
     protected void btnSearch_Click(object sender, EventArgs e)
@@ -302,4 +224,6 @@ public partial class AddRewardProviders : System.Web.UI.Page
     {
         payPanel.Visible = false;
     }
+
+    
 }

@@ -11,16 +11,19 @@ using System.Text.RegularExpressions;
 
 public partial class userCalendar : System.Web.UI.Page
 {
-    SqlConnection con;
-
     protected void Page_Load(object sender, EventArgs e)
     {
-        con = new SqlConnection();
-        con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-        if (!IsPostBack)
+
+        try
         {
+            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"] + "  $" + ((Decimal)Session["AccountBalance"]).ToString("0.##");
             loadProfilePicture();
         }
+        catch (Exception)
+        {
+            Response.Redirect("Default.aspx");
+        }
+
     }
 
     protected void loadProfilePicture()

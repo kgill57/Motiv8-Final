@@ -56,15 +56,22 @@
     </style>
     <script type ="text/javascript">
         function homeButton() {
-            if ('<%=Session("index") %>' == 2){
+            if ('<%=Session("index") %>' == 2) {
                 window.location = "/Default.aspx";
             }
-            else if ('<%=Session("index") %>' == 1){
+            else if ('<%=Session("index") %>' == 1) {
                 window.location = "/AdminPage.aspx";
+            }
+            else if ('<%=Session("index") %>' == 3) {
+                window.location = "/rpHome.aspx";
             }
             else if ('<%=Session("index") %>' == 0) {
                 window.location = "/TeamMemberPage.aspx";
             }
+            else if ('<%=Session("index") %>' == 4) {
+                window.location = "/SuperAdmin.aspx";
+            }
+            
         }
     </script>
 </head>

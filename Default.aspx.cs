@@ -38,8 +38,8 @@ public partial class LoginPage : System.Web.UI.Page
 
     protected void btnLogin_Click(object sender, EventArgs e)
     {
-        String email = txtEmail.Text;
-        String password = txtPassword.Text;
+        String email = txtEmail.Text.ToLower();
+        String password = txtPassword.Text.ToLower();
 
         SqlConnection con = new SqlConnection();
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
@@ -48,18 +48,18 @@ public partial class LoginPage : System.Web.UI.Page
         SqlCommand select = new SqlCommand();
         select.Connection = con;
 
-
         select.Parameters.Add(new System.Data.SqlClient.SqlParameter("@email", System.Data.SqlDbType.VarChar));
-        select.Parameters["@email"].Value = txtEmail.Text;
+        select.Parameters["@email"].Value = email;
 
         select.CommandText = "SELECT EmployedStatus FROM [User] WHERE Email = @email";
-
 
         bool status = Convert.ToBoolean(select.ExecuteScalar());
         if (status == false)
         {
-            lblError.Visible = true;
-            lblError.Text = "Email does not exist";
+            ScriptManager.RegisterStartupScript(this, GetType(), "showalert",
+                    "alert('The provided email does not exist.')", true);
+            txtEmail.Text = "";
+            txtPassword.Text = "";
             return;
         }
 
@@ -69,13 +69,17 @@ public partial class LoginPage : System.Web.UI.Page
         con.Close();
 
         bool provider = checkProvider();
+        bool superAdmin = checkSuperAdmin();
         con.Open();
         bool admin;
         select.CommandText = "(SELECT [Admin] FROM [dbo].[User] WHERE [Email] = @email)";
         admin = Convert.ToBoolean(select.ExecuteScalar());
+        bool approved;
+        select.CommandText = "SELECT [Approved] FROM [RewardProvider] WHERE [ProviderEmail] = @email";
+        approved = Convert.ToBoolean(select.ExecuteScalar());
 
         if (provider)
-        {
+        {                      
             select.CommandText = "SELECT ProviderID FROM [User] WHERE Email = @email";
             Session["ProviderID"] = (int)select.ExecuteScalar();
 
@@ -89,15 +93,26 @@ public partial class LoginPage : System.Web.UI.Page
 
         if (verify)
         {
-            getUser(txtEmail.Text);
+            getUser(txtEmail.Text.ToLower());
 
-            if (provider)
+            if (provider && approved == true)
             {
                 Response.Redirect("rpHome.aspx");
+            }
+            else if (provider && approved == false)
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "showalert",
+                    "alert('You must be approved by an administrator before you can access the system.')", true);
+                txtEmail.Text = "";
+                txtPassword.Text = "";
             }
             else if (admin)
             {
                 Response.Redirect("AdminPage.aspx");
+            }
+            else if (superAdmin)
+            {
+                Response.Redirect("SuperAdmin.aspx");
             }
             else
             {
@@ -106,8 +121,10 @@ public partial class LoginPage : System.Web.UI.Page
         }
         else
         {
-            lblError.Visible = true;
-            lblError.Text = "Invalid email and/or password.";
+            ScriptManager.RegisterStartupScript(this, GetType(), "showalert",
+                    "alert('The provided email and/or password was invalid.')", true);
+            txtEmail.Text = "";
+            txtPassword.Text = "";
         }
 
     }
@@ -121,7 +138,26 @@ public partial class LoginPage : System.Web.UI.Page
         SqlDataReader reader = read.ExecuteReader();
         while (reader.Read())
         {
-            if (txtEmail.Text == Convert.ToString(reader.GetValue(4)))
+            if (txtEmail.Text.ToLower() == Convert.ToString(reader.GetValue(4)))
+            {
+                rt = true;
+            }
+        }
+        con.Close();
+        return rt;
+    }
+
+    public bool checkSuperAdmin()
+    {
+        SqlConnection con = new SqlConnection();
+        con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
+        con.Open();
+        bool rt = false;
+        SqlCommand read = new SqlCommand("SELECT * FROM [dbo].[User] WHERE [SuperAdmin] = 1", con);
+        SqlDataReader reader = read.ExecuteReader();
+        while (reader.Read())
+        {
+            if (txtEmail.Text.ToLower() == Convert.ToString(reader.GetValue(4)))
             {
                 rt = true;
             }
@@ -140,7 +176,7 @@ public partial class LoginPage : System.Web.UI.Page
 
         select.Parameters.AddWithValue("@email", email);
 
-        select.CommandText = "SELECT UserID  FROM [User] WHERE Email = @email";
+        select.CommandText = "SELECT UserID FROM [User] WHERE Email = @email";
         Session["UserID"] = (int)select.ExecuteScalar();
 
         select.CommandText = "SELECT FName FROM [User] WHERE Email = @email";
@@ -155,7 +191,6 @@ public partial class LoginPage : System.Web.UI.Page
         {
             Session["MI"] = "";
         }
-
 
         select.CommandText = "SELECT LName FROM [User] WHERE Email = @email";
         Session["LName"] = (String)(select.ExecuteScalar());
@@ -175,12 +210,6 @@ public partial class LoginPage : System.Web.UI.Page
 
         select.CommandText = "SELECT AccountBalance FROM [User] WHERE Email = @email";
         Session["AccountBalance"] = (Convert.ToDecimal(select.ExecuteScalar()));
-
-        
-
-
-
-
     }
 
     protected void btnCreateAdmin_Click(object sender, EventArgs e)
@@ -213,8 +242,8 @@ public partial class LoginPage : System.Web.UI.Page
         }
         else
         {
-            lblError.Visible = true;
-            lblError.Text = "This username is already taken";
+            ScriptManager.RegisterStartupScript(this, GetType(), "showalert",
+                    "alert('This username is already in use.')", true);           
         }
 
 

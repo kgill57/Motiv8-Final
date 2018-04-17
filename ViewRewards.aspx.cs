@@ -19,7 +19,7 @@ public partial class ViewRewards : System.Web.UI.Page
     public static Reward[] reward;
     protected void Page_Load(object sender, EventArgs e)
     {
-        
+
 
         try
         {
@@ -27,16 +27,49 @@ public partial class ViewRewards : System.Web.UI.Page
             loadProfilePicture();
 
             loadRewardsFeed();
+            if(!IsPostBack)
+                fillGridView();
+
+            if ((int)Session["Admin"] != 1)
+            {
+                Response.Redirect("Default.aspx");
+            }
         }
         catch (Exception)
         {
             Response.Redirect("Default.aspx");
         }
 
-        //if (!IsPostBack)
-            
 
-        
+
+
+    }
+
+    protected void fillGridView()
+    {
+        try
+        {
+
+            System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
+            sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
+
+            sc.Open();
+
+            System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand("SELECT RewardProvider.ProviderName, Reward.RewardName, Reward.RewardQuantity, " +
+                "Reward.RewardAmount, Reward.PendingReview, Reward.DateAdded FROM RewardProvider, Reward " +
+                "WHERE Reward.ProviderID = RewardProvider.ProviderID AND Reward.PendingReview = 1 AND RewardProvider.EmployerID = " +(int)Session["EmployerID"]+ "" +
+                "GROUP BY RewardProvider.ProviderName, Reward.RewardName, Reward.RewardQuantity, Reward.RewardAmount, Reward.PendingReview, Reward.DateAdded", sc);
+            cmd.ExecuteNonQuery();
+
+            pendingRewardsGrid.DataSource = cmd.ExecuteReader();
+            pendingRewardsGrid.DataBind();
+            sc.Close();
+
+        }
+        catch
+        {
+
+        }
     }
 
     protected void loadProfilePicture()
@@ -45,23 +78,18 @@ public partial class ViewRewards : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        try
-        {
+        
 
-            SqlCommand select = new SqlCommand();
-            select.Connection = con;
+        SqlCommand select = new SqlCommand();
+        select.Connection = con;
 
-            select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
-            string currentPicture = (String)select.ExecuteScalar();
+        select.CommandText = "SELECT ProfilePicture FROM [dbo].[User] WHERE UserID =" + Convert.ToString((int)Session["UserID"]);
+        string currentPicture = (String)select.ExecuteScalar();
 
-            profilePicture.ImageUrl = "~/Images/" + currentPicture;
-            lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
+        profilePicture.ImageUrl = "~/Images/" + currentPicture;
+        lblUser.Text = (String)Session["FName"] + " " + (String)Session["LName"];
 
-        }
-        catch (Exception)
-        {
-
-        }
+        
         con.Close();
     }
 
@@ -71,14 +99,14 @@ public partial class ViewRewards : System.Web.UI.Page
         con.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
         con.Open();
 
-        SqlCommand read = new SqlCommand("SELECT * FROM [dbo].[Reward] WHERE RewardQuantity > 0 ORDER BY [DateAdded] DESC", con);
+        SqlCommand read = new SqlCommand("SELECT Reward.*, RewardProvider.EmployerID FROM Reward INNER JOIN RewardProvider ON Reward.ProviderID = RewardProvider.ProviderID WHERE Reward.PendingReview = 0 AND RewardProvider.EmployerID = " + Convert.ToString((int)Session["EmployerID"]), con);
         SqlCommand balance = new SqlCommand("SELECT TotalBalance FROM Employer WHERE EmployerID =" + Convert.ToString((int)Session["EmployerID"]), con);
         double totalBalance = Convert.ToDouble(balance.ExecuteScalar());
 
         lblBalance.Text = totalBalance.ToString("$#.00");
 
         //Create Scaler to see how many transactions there are
-        SqlCommand scaler = new SqlCommand("SELECT COUNT(RewardID) FROM [dbo].[Reward] WHERE RewardQuantity > 0", con);
+        SqlCommand scaler = new SqlCommand("SELECT COUNT(Reward.RewardID) FROM Reward INNER JOIN RewardProvider ON Reward.ProviderID = RewardProvider.ProviderID WHERE Reward.PendingReview = 0 AND RewardProvider.EmployerID = " + Convert.ToString((int)Session["EmployerID"]), con);
         int arraySize = (int)scaler.ExecuteScalar();
 
         SqlDataReader reader = read.ExecuteReader();
@@ -98,8 +126,8 @@ public partial class ViewRewards : System.Web.UI.Page
                 pictureLink = "Images/admin.png";
             }
             reward[arrayCounter] = new Reward(Convert.ToInt32(reader.GetValue(0)), Convert.ToString(reader.GetValue(1)),
-                Convert.ToInt32(reader.GetValue(2)), Convert.ToDouble(reader.GetValue(3)), pictureLink, Convert.ToInt32(reader.GetValue(5)), 
-                Convert.ToDateTime(reader.GetValue(6)));
+                Convert.ToInt32(reader.GetValue(2)), Convert.ToDouble(reader.GetValue(3)), pictureLink, Convert.ToInt32(reader.GetValue(6)), 
+                Convert.ToDateTime(reader.GetValue(7)));
             arrayCounter++;
         }
 
@@ -187,244 +215,6 @@ public partial class ViewRewards : System.Web.UI.Page
         ClientScript.RegisterStartupScript(typeof(Page), "autoPostback", ClientScript.GetPostBackEventReference(this, String.Empty), true);
     }
 
-    //protected void fillGridView()
-    //{
-    //    try
-    //    {
-
-    //        SqlConnection sc = new SqlConnection(ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString);
-    //        sc.Open();
-
-    //        SqlCommand balance = new SqlCommand("SELECT TotalBalance FROM Employer WHERE EmployerID =" + Convert.ToString((int)Session["EmployerID"]), sc);
-    //        double totalBalance = Convert.ToDouble(balance.ExecuteScalar());
-
-    //        lblBalance.Text = totalBalance.ToString("$#.00");
-
-    //        // Declare the query string.
-    //        System.Data.SqlClient.SqlCommand select = new System.Data.SqlClient.SqlCommand("SELECT * FROM Reward;", sc);
-    //        select.ExecuteNonQuery();
-
-    //        grdRewards.DataSource = select.ExecuteReader();
-    //        grdRewards.DataBind();
-    //        sc.Close();
-
-    //    }
-    //    catch
-    //    {
-
-    //    }
-    //}
-
-    //protected void fillDropDown()
-    //{
-    //    SqlConnection sc = new SqlConnection(ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString);
-    //    sc.Open();
-    //    // Declare the query string.
-
-    //    System.Data.SqlClient.SqlCommand select = new System.Data.SqlClient.SqlCommand("SELECT ProviderName FROM RewardProvider;", sc);
-    //    SqlDataAdapter da = new SqlDataAdapter(select);
-    //    DataTable dt = new DataTable();
-
-    //    da.Fill(dt);
-
-    //    drpRewardProvider.DataSource = dt;
-    //    drpRewardProvider.DataTextField = "ProviderName";
-    //    drpRewardProvider.DataBind();
-    //    sc.Close();
-    //}
-
-
-
-    //protected void grdRewards_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-    //{
-    //    grdRewards.EditIndex = -1;
-    //    fillGridView();
-    //}
-
-    //protected void grdRewards_RowDeleting(object sender, GridViewDeleteEventArgs e)
-    //{
-    //    try
-    //    {
-    //        System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
-    //        sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-
-    //        sc.Open();
-    //        //Declare the query string.
-
-    //        System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("DELETE" +
-    //            " FROM Reward WHERE RewardID = @rewardID;", sc);
-    //        del.Parameters.AddWithValue("@rewardID", Convert.ToInt32(grdRewards.DataKeys[e.RowIndex].Value.ToString()));
-    //        del.ExecuteNonQuery();
-    //        sc.Close();
-    //        fillGridView();
-    //    }
-    //    catch
-    //    {
-
-    //    }
-    //}
-
-    //protected void grdRewards_RowUpdating(object sender, GridViewUpdateEventArgs e)
-    //{
-    //    Boolean textError = true;
-    //    System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
-    //    sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-
-    //    //Check if the project name Text box is empty
-    //    if (String.IsNullOrEmpty((grdRewards.Rows[e.RowIndex].FindControl("txtgvRewardName") as TextBox).Text.ToString()))
-    //    {
-    //        //projectNameError.Visible = true;
-    //        //projectNameError.Text = "The project name cannot be empty";
-    //        textError = false;
-    //    }
-
-    //    //Check if the Project Description Text box is empty
-    //    if (String.IsNullOrEmpty((grdRewards.Rows[e.RowIndex].FindControl("txtgvRewardQuantity") as TextBox).Text.ToString()))
-    //    {
-    //        //projectDescriptionErrror.Visible = true;
-    //        //projectDescriptionErrror.Text = "Field cannot be empty";
-    //        textError = false;
-    //    }
-    //    var newQuantity = grdRewards.Rows[e.RowIndex].FindControl("txtgvRewardQuantity") as TextBox;
-
-    //    Reward newReward = new Reward();
-    //    newReward.setRewardName(char.ToUpper((grdRewards.Rows[e.RowIndex].FindControl("txtgvRewardName") as TextBox).Text[0])
-    //                + (grdRewards.Rows[e.RowIndex].FindControl("txtgvRewardName") as TextBox).Text.Substring(1));
-    //    newReward.setRewardQuantity(Convert.ToInt32((newQuantity.Text)));
-    //    newReward.setRewardID(Convert.ToInt32(grdRewards.DataKeys[e.RowIndex].Value.ToString()));
-
-    //    if (textError)
-    //    {
-    //        sc.Open();
-    //        // Declare the query string.
-    //        try
-    //        {
-    //            var newAmount = grdRewards.Rows[e.RowIndex].FindControl("txtgvRewardAmount") as TextBox;
-    //            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("UPDATE Reward SET RewardName=@rewardName, RewardAmount=@rewardAmount, " +
-    //                "RewardQuantity=@rewardQuantity WHERE RewardID=@rewardID", sc);
-    //            del.Parameters.AddWithValue("@rewardName", newReward.getRewardName());
-    //            del.Parameters.AddWithValue("@rewardQuantity", newReward.getRewardQuantity());
-
-    //            if (newAmount.Text.StartsWith("$"))
-    //            {
-    //                del.Parameters.AddWithValue("@rewardAmount", Convert.ToDouble(newAmount.Text.Substring(1)));
-    //            }
-
-    //            else if (newAmount.Text.StartsWith("$") == false)
-    //            {
-    //                del.Parameters.AddWithValue("@rewardAmount", Convert.ToDouble(newAmount.Text));
-    //            }
-
-    //            del.Parameters.AddWithValue("@rewardID", newReward.getRewardID());
-    //            del.ExecuteNonQuery();
-    //            sc.Close();
-    //            grdRewards.EditIndex = -1;
-
-    //            fillGridView();
-    //        }
-    //        catch
-    //        {
-
-    //        }
-    //    }
-    //}
-
-    //protected void grdRewards_RowEditing(object sender, GridViewEditEventArgs e)
-    //{
-    //    grdRewards.EditIndex = e.NewEditIndex;
-    //    fillGridView();
-    //}
-
-
-
-    //protected void btnSearch_Click(object sender, EventArgs e)
-    //{
-    //    Boolean textError = true;
-    //    //Check if the project name Text box is empty
-    //    if (String.IsNullOrEmpty(txtSearch.Text))
-    //    {
-    //        try
-    //        {
-    //            System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
-    //            sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-    //            sc.Open();
-    //            //Declare the query string.
-
-    //            System.Data.SqlClient.SqlCommand select = new System.Data.SqlClient.SqlCommand("SELECT *" +
-    //                " FROM Reward;", sc);
-    //            select.ExecuteNonQuery();
-
-    //            grdRewards.DataSource = select.ExecuteReader();
-    //            grdRewards.DataBind();
-    //            sc.Close();
-    //        }
-    //        catch
-    //        {
-
-    //        }
-    //    }
-    //    else
-    //    {
-    //        try
-    //        {
-    //            SqlConnection sc = new SqlConnection(ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString);
-    //            sc.Open();
-    //            // Declare the query string.
-
-    //            System.Data.SqlClient.SqlCommand select = new System.Data.SqlClient.SqlCommand("SELECT * FROM Reward WHERE LOWER(RewardName) LIKE LOWER('%' + @rewardName + '%');", sc);
-
-    //            select.Parameters.AddWithValue("@rewardName", txtSearch.Text);
-    //            select.ExecuteNonQuery();
-
-    //            grdRewards.DataSource = select.ExecuteReader();
-    //            grdRewards.DataBind();
-    //            sc.Close();
-
-    //        }
-    //        catch
-    //        {
-
-    //        }
-    //    }
-    //}
-
-    //protected void btnAddReward_Click(object sender, EventArgs e)
-    //{
-    //    rewardPanel.Visible = true;
-    //    fillDropDown();
-    //}
-
-    //protected void btnClear_Click(object sender, EventArgs e)
-    //{
-    //    Response.Redirect(Request.RawUrl);
-    //}
-
-    //protected void btnAdd_Click(object sender, EventArgs e)
-    //{
-    //    System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
-    //    sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
-
-    //    sc.Open();
-    //    //Declare the query string.
-
-    //    System.Data.SqlClient.SqlCommand insert = new System.Data.SqlClient.SqlCommand("INSERT INTO Reward (RewardName, RewardQuantity, RewardAmount, " +
-    //        "ProviderID, AdminID, DateAdded) VALUES (@rewardName, @rewardQuantity, @rewardAmount, @providerID, @adminID, @dateAdded)", sc);
-    //    insert.Parameters.AddWithValue("@rewardName", char.ToUpper(txtRewardName.Text[0]) + txtRewardName.Text.Substring(1));
-    //    insert.Parameters.AddWithValue("@rewardQuantity", Convert.ToInt32(txtRewardQuantity.Text));
-    //    insert.Parameters.AddWithValue("@rewardAmount", Convert.ToDouble(txtRewardAmount.Text).ToString("#.00"));
-    //    insert.Parameters.AddWithValue("@providerID", findProviderID(drpRewardProvider.SelectedItem.Text));
-    //    insert.Parameters.AddWithValue("@adminID", (int)Session["UserID"]);
-    //    insert.Parameters.AddWithValue("@dateAdded", DateTime.Today);
-
-    //    insert.ExecuteNonQuery();
-
-    //    fillGridView();
-
-    //    txtRewardAmount.Text = "";
-    //    txtRewardName.Text = "";
-    //    txtRewardQuantity.Text = "";
-    //    txtSearch.Text = "";
-    //}
 
     public int findProviderID(string providerName)
     {
@@ -439,11 +229,81 @@ public partial class ViewRewards : System.Web.UI.Page
         return providerID;
     }
 
-    //protected void RewardAutoFillID_Click(object sender, EventArgs e)
-    //{
-    //    txtRewardName.Text = "Test Reward";
-    //    txtRewardQuantity.Text = "50";
-    //    txtRewardAmount.Text = "25";
 
-    //}
+
+    protected void pendingRewardsGrid_RowEditing(object sender, GridViewEditEventArgs e)
+    {
+        pendingRewardsGrid.EditIndex = e.NewEditIndex;
+        fillGridView();
+    }
+
+    protected void pendingRewardsGrid_RowDeleting(object sender, GridViewDeleteEventArgs e)
+    {
+        //int num = Convert.ToInt32(pendingRewardsGrid.DataKeys[e.RowIndex].Value);
+
+        //GridViewRow row = (GridViewRow)pendingRewardsGrid.Rows[e.RowIndex];
+
+        //int x = Convert.ToInt32(row);
+
+        try
+        {
+            System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
+            sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
+
+            sc.Open();
+            //Declare the query string.
+
+            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("DELETE" +
+                " FROM [Reward] WHERE RewardName = @rewardName;", sc);
+            del.Parameters.AddWithValue("@rewardName", (pendingRewardsGrid.Rows[e.RowIndex].FindControl("lblRewardName") as Label).Text.ToString());
+            del.ExecuteNonQuery();
+            del.ExecuteNonQuery();
+            sc.Close();
+            fillGridView();
+        }
+        catch
+        {
+
+        }
+    }
+
+    protected void pendingRewardsGrid_RowUpdating(object sender, GridViewUpdateEventArgs e)
+    {
+        System.Data.SqlClient.SqlConnection sc = new System.Data.SqlClient.SqlConnection();
+        sc.ConnectionString = ConfigurationManager.ConnectionStrings["lab4ConnectionString"].ConnectionString;
+
+        
+        // Declare var variables to store the row currently being edited
+        var ddl = pendingRewardsGrid.Rows[e.RowIndex].FindControl("drpApproval") as DropDownList;
+
+        sc.Open();
+
+        // Declare the query string
+        try
+        {
+            System.Data.SqlClient.SqlCommand del = new System.Data.SqlClient.SqlCommand("UPDATE [Reward] SET PendingReview = @review " +
+                "WHERE RewardName = @rewardName", sc);
+
+            del.Parameters.AddWithValue("@rewardName", (pendingRewardsGrid.Rows[e.RowIndex].FindControl("lblRewardName") as Label).Text.ToString());
+            del.Parameters.AddWithValue("@review", ddl.SelectedValue);
+            del.ExecuteNonQuery();
+            sc.Close();
+            pendingRewardsGrid.EditIndex = -1;
+            fillGridView();
+            loadRewardsFeed();
+        }
+
+        catch
+        {
+
+        }
+
+        Response.Redirect(Request.RawUrl);
+    }
+
+    protected void pendingRewardsGrid_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+    {
+        pendingRewardsGrid.EditIndex = -1;
+        fillGridView();
+    }
 }
